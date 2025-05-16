@@ -10,41 +10,75 @@ body {
     width: 100%;
     height: 100%;
     min-height: 500px;
-    border-radius: 8px;
+    border-radius: 12px;
     z-index: 1;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Контейнер с картой занимает всю высоту экрана на больших экранах */
 .map-container {
     height: calc(100vh - 60px);
     position: relative;
+    margin-bottom: 15px;
 }
 
 /* Сайдбар */
 .sidebar {
     max-height: calc(100vh - 60px);
     overflow-y: auto;
-    padding-right: 10px;
+    padding-right: 15px;
 }
 
 /* Стили для элементов достопримечательностей */
 .attraction-item {
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    border-radius: 8px;
+    transition: all 0.3s ease;
     cursor: pointer;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    background-color: rgba(33, 37, 41, 0.03);
 }
 
 .attraction-item:hover {
-    background-color: rgba(0, 123, 255, 0.1);
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.attraction-item img {
+    border-radius: 6px;
+    object-fit: cover;
+    height: 60px;
+    width: 60px;
 }
 
 /* Стили для всплывающих окон на карте */
+.attraction-popup {
+    max-width: 300px;
+}
+
 .attraction-popup h5 {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+.attraction-popup img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
 }
 
 .attraction-popup p {
     margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.attraction-popup .badge {
+    margin-right: 5px;
 }
 
 /* Панель для отображения маршрута */
@@ -54,12 +88,15 @@ body {
     left: 10px;
     right: 10px;
     background-color: rgba(33, 37, 41, 0.95);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
     z-index: 1000;
-    max-height: 300px;
+    max-height: 350px;
     color: #fff;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Контейнер точек маршрута */

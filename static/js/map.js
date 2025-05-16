@@ -63,15 +63,33 @@ const ChelMap = {
                 id: attraction.id
             });
             
+            // Категории и их цвета
+            const categoryColors = {
+                'Музей': 'info',
+                'Культура': 'primary',
+                'Парк': 'success',
+                'Архитектура': 'secondary',
+                'Памятник': 'warning',
+                'Развлечения': 'danger'
+            };
+            
+            const categoryColor = categoryColors[attraction.category] || 'secondary';
+            
             // Создаем всплывающее окно с информацией
             const popupContent = `
                 <div class="attraction-popup">
                     <h5>${attraction.name}</h5>
-                    <p class="text-muted">${attraction.category}</p>
-                    <p>${attraction.address}</p>
-                    <button class="btn btn-sm btn-outline-info" onclick="showAttractionDetails(${attraction.id})">
-                        Подробнее
-                    </button>
+                    <span class="badge bg-${categoryColor} mb-2">${attraction.category || 'Место'}</span>
+                    ${attraction.image_url ? `<img src="${attraction.image_url}" alt="${attraction.name}" class="img-fluid mb-2">` : ''}
+                    <p>${attraction.address ? `<i class="bi bi-geo-alt"></i> ${attraction.address}` : ''}</p>
+                    <div class="d-flex justify-content-between mt-2">
+                        <button class="btn btn-sm btn-primary" onclick="RouteManager.addPointToRoute('${attraction.id}', '${attraction.name}', ${attraction.lat}, ${attraction.lng}, '${attraction.category || ''}')">
+                            <i class="bi bi-plus-circle"></i> В маршрут
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="showAttractionDetails(${attraction.id})">
+                            Подробнее
+                        </button>
+                    </div>
                 </div>
             `;
             
