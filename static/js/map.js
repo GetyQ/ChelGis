@@ -133,25 +133,39 @@ const ChelMap = {
             .then(attraction => {
                 const detailsContainer = document.getElementById('attraction-details');
                 
+                // Получаем изображение достопримечательности
+                const imageUrl = attraction.image_url && attraction.image_url !== 'https://via.placeholder.com/150' ? 
+                                attraction.image_url : 
+                                `https://source.unsplash.com/300x200/?chelybinsk,${encodeURIComponent(attraction.category)}`;
+                
                 detailsContainer.innerHTML = `
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
                             <h5 class="mb-0">${attraction.name}</h5>
-                            <button type="button" class="btn-close" 
+                            <button type="button" class="btn-close btn-close-white" 
                                     onclick="document.getElementById('attraction-details').style.display='none'"></button>
                         </div>
+                        <div class="card-img-top text-center bg-light">
+                            <img src="${imageUrl}" alt="${attraction.name}" 
+                                 style="max-height: 200px; width: auto; max-width: 100%;" 
+                                 class="img-fluid my-2 rounded shadow-sm">
+                        </div>
                         <div class="card-body">
-                            <p class="text-muted">${attraction.category}</p>
-                            <p><strong>Адрес:</strong> ${attraction.address}</p>
-                            <p>${attraction.description}</p>
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-secondary">${attraction.category}</span>
+                                <small class="text-muted">${attraction.address}</small>
+                            </div>
+                            <div class="attraction-description mb-3">
+                                ${attraction.description}
+                            </div>
+                            <div class="d-grid gap-2">
                                 <button class="btn btn-primary" 
                                         onclick="ChelMap.zoomToAttraction(${attraction.lat}, ${attraction.lng})">
-                                    Показать на карте
+                                    <i class="fas fa-map-marker-alt me-2"></i> Показать на карте
                                 </button>
                                 <button class="btn btn-success" 
                                         onclick="RouteManager.addToRoute(${attraction.id}, '${attraction.name}')">
-                                    Добавить в маршрут
+                                    <i class="fas fa-route me-2"></i> Добавить в маршрут
                                 </button>
                             </div>
                         </div>
@@ -162,6 +176,15 @@ const ChelMap = {
             })
             .catch(error => {
                 console.error('Ошибка при загрузке информации о достопримечательности:', error);
+                // Отображаем сообщение об ошибке
+                const detailsContainer = document.getElementById('attraction-details');
+                detailsContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>Ошибка загрузки</h5>
+                        <p>Не удалось загрузить информацию о достопримечательности. Пожалуйста, попробуйте позже.</p>
+                    </div>
+                `;
+                detailsContainer.style.display = 'block';
             });
     },
     

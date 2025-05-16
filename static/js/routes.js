@@ -266,14 +266,40 @@ RouteManager.displayPredefinedRoutes = function(routes) {
 
 // Загрузка предопределенного маршрута
 RouteManager.loadPredefinedRoute = function(routeId) {
+    // Показываем индикатор загрузки
+    const loadingAlert = document.createElement('div');
+    loadingAlert.className = 'alert alert-info fade show';
+    loadingAlert.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <span>Загрузка маршрута...</span>
+        </div>
+    `;
+    document.querySelector('.map-container').prepend(loadingAlert);
+    
     fetch(`/api/predefined-route/${routeId}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(routeData => {
+            // Удаляем индикатор загрузки
+            loadingAlert.remove();
+            
             // Очищаем текущий маршрут
             this.clearRoute();
             
             // Сохраняем название маршрута
             this.currentRouteName = routeData.name;
+            
+            // Проверяем наличие точек в маршруте
+            if (!routeData.points || routeData.points.length === 0) {
+                throw new Error('Маршрут не содержит точек');
+            }
             
             // Добавляем точки из предопределенного маршрута
             routeData.points.forEach(point => {
@@ -300,8 +326,23 @@ RouteManager.loadPredefinedRoute = function(routeId) {
             // Закрываем модальное окно, если оно открыто
             const modal = document.getElementById('predefined-routes-modal');
             if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) bsModal.hide();
+                try {
+                    const bsModal = new bootstrap.Modal(modal);
+                    bsModal.hide();
+                } catch (e) {
+                    // Если модальное окно уже инициализировано, попробуем получить его экземпляр
+                    try {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) modalInstance.hide();
+                    } catch (innerError) {
+                        // Если не удалось, просто скрываем модальное окно стандартными методами
+                        modal.classList.remove('show');
+                        modal.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) backdrop.remove();
+                    }
+                }
             }
             
             // Показываем сообщение об успешной загрузке
@@ -325,6 +366,9 @@ RouteManager.loadPredefinedRoute = function(routeId) {
             }
         })
         .catch(error => {
+            // Удаляем индикатор загрузки
+            loadingAlert.remove();
+            
             console.error('Ошибка при загрузке маршрута:', error);
             
             // Показываем сообщение об ошибке
