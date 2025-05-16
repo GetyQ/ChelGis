@@ -97,9 +97,17 @@
         <!-- Панель маршрута -->
         <div id="route-panel" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="mb-0">Маршрут (<span id="route-point-count">0</span> точек)</h5>
                 <div>
-                    <button id="optimize-route-btn" class="btn btn-sm btn-info" disabled>
+                    <h5 class="mb-0">
+                        <span id="route-name">Маршрут</span> 
+                        (<span id="route-point-count">0</span> точек)
+                    </h5>
+                    <div class="text-muted small">
+                        Кликните на маркерах карты, чтобы увидеть детали
+                    </div>
+                </div>
+                <div>
+                    <button id="optimize-route-btn" class="btn btn-sm btn-primary" disabled title="Создать оптимальный маршрут между выбранными точками">
                         <i class="fas fa-sort"></i> Оптимизировать
                     </button>
                     <button id="clear-route-btn" class="btn btn-sm btn-danger" disabled>
@@ -107,11 +115,18 @@
                     </button>
                 </div>
             </div>
-            <div id="route-points-list">
-                <!-- Точки маршрута будут добавлены динамически -->
+            <div class="route-points-container">
+                <div id="route-points-list">
+                    <!-- Точки маршрута будут добавлены динамически -->
+                </div>
             </div>
-            <div class="mt-2 text-muted">
-                Примерное расстояние: <span id="route-distance">0</span> км
+            <div class="mt-2 d-flex justify-content-between">
+                <div class="text-muted">
+                    <i class="fas fa-route"></i> Расстояние: <strong><span id="route-distance">0</span> км</strong>
+                </div>
+                <div class="text-muted small" id="route-instruction">
+                    Перетащите точки для изменения порядка
+                </div>
             </div>
         </div>
     </div>

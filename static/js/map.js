@@ -232,6 +232,25 @@ const ChelMap = {
     // Очистка маршрута
     clearRoute: function() {
         this.routeLayer.clearLayers();
+    },
+    
+    // Подгонка карты, чтобы показать все точки маршрута
+    fitMapToRoutePoints: function(routePoints) {
+        if (!routePoints || routePoints.length === 0) return;
+        
+        // Создаем границы
+        const bounds = L.latLngBounds();
+        
+        // Добавляем каждую точку в границы
+        routePoints.forEach(point => {
+            bounds.extend([point.lat, point.lng]);
+        });
+        
+        // Подгоняем карту с небольшим отступом
+        this.map.flyToBounds(bounds, {
+            padding: [50, 50],
+            duration: 1
+        });
     }
 };
 

@@ -3,6 +3,9 @@ const RouteManager = {
     // Точки маршрута
     routePoints: [],
     
+    // Текущее название маршрута
+    currentRouteName: null,
+    
     // Добавление достопримечательности в маршрут
     addToRoute: function(id, name) {
         // Проверяем, есть ли уже эта достопримечательность в маршруте
@@ -65,28 +68,58 @@ const RouteManager = {
         const routeList = document.getElementById('route-points-list');
         routeList.innerHTML = '';
         
+        // Обновляем название маршрута, если загружен предопределенный маршрут
+        if (this.currentRouteName) {
+            document.getElementById('route-name').textContent = this.currentRouteName;
+        } else {
+            document.getElementById('route-name').textContent = 'Ваш маршрут';
+        }
+        
         this.routePoints.forEach((point, index) => {
+            // Получаем категорию из точки или устанавливаем по умолчанию
+            const category = point.category || 'Место';
+            
             const item = document.createElement('div');
-            item.className = 'route-point mb-2 p-2 d-flex justify-content-between align-items-center';
+            item.className = 'route-point d-flex justify-content-between align-items-center';
+            item.setAttribute('data-point-id', point.id);
             item.innerHTML = `
                 <div>
                     <span class="badge bg-primary me-2">${index + 1}</span>
-                    ${point.name}
+                    <span class="route-point-title">${point.name}</span>
+                    <span class="route-point-category">${category}</span>
                 </div>
                 <div>
+                    <button class="btn btn-sm btn-outline-light" 
+                            onclick="ChelMap.zoomToAttraction(${point.lat}, ${point.lng})" 
+                            title="Показать на карте">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </button>
                     <button class="btn btn-sm btn-outline-danger" 
-                            onclick="RouteManager.removeFromRoute(${point.id})">
+                            onclick="RouteManager.removeFromRoute(${point.id})" 
+                            title="Удалить из маршрута">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             `;
+            
+            // Добавляем обработчики для drag-and-drop (можно реализовать позже)
+            item.draggable = true;
+            
             routeList.appendChild(item);
         });
         
-        // Обновляем кнопки управления маршрутом
+        // Обновляем кнопки управления маршрутом и счетчики
         document.getElementById('route-point-count').textContent = this.routePoints.length;
         document.getElementById('clear-route-btn').disabled = this.routePoints.length === 0;
         document.getElementById('optimize-route-btn').disabled = this.routePoints.length < 3;
+        
+        // Показываем/скрываем инструкцию в зависимости от количества точек
+        const instructionEl = document.getElementById('route-instruction');
+        if (this.routePoints.length < 3) {
+            instructionEl.style.display = 'none';
+        } else {
+            instructionEl.style.display = 'block';
+        }
     },
     
     // Построение маршрута между точками
@@ -187,6 +220,7 @@ const RouteManager = {
     // Очистка маршрута
     clearRoute: function() {
         this.routePoints = [];
+        this.currentRouteName = null; // Сбрасываем название маршрута
         this.updateRouteDisplay();
         ChelMap.clearRoute();
         document.getElementById('route-panel').style.display = 'none';
@@ -238,13 +272,17 @@ RouteManager.loadPredefinedRoute = function(routeId) {
             // Очищаем текущий маршрут
             this.clearRoute();
             
+            // Сохраняем название маршрута
+            this.currentRouteName = routeData.name;
+            
             // Добавляем точки из предопределенного маршрута
             routeData.points.forEach(point => {
                 this.routePoints.push({
                     id: point.id,
                     name: point.name,
                     lat: point.lat,
-                    lng: point.lng
+                    lng: point.lng,
+                    category: point.category // Добавляем категорию из данных
                 });
             });
             
@@ -262,14 +300,15 @@ RouteManager.loadPredefinedRoute = function(routeId) {
             // Закрываем модальное окно, если оно открыто
             const modal = document.getElementById('predefined-routes-modal');
             if (modal) {
-                bootstrap.Modal.getInstance(modal).hide();
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
             }
             
             // Показываем сообщение об успешной загрузке
             const alert = document.createElement('div');
             alert.className = 'alert alert-success alert-dismissible fade show';
             alert.innerHTML = `
-                <strong>Маршрут загружен!</strong> "${routeData.name}" успешно добавлен.
+                <strong>Маршрут загружен!</strong> "${routeData.name}" добавлен на карту.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             `;
             
@@ -279,9 +318,28 @@ RouteManager.loadPredefinedRoute = function(routeId) {
             setTimeout(() => {
                 alert.remove();
             }, 5000);
+            
+            // Анимируем карту для показа всего маршрута
+            if (this.routePoints.length > 0) {
+                ChelMap.fitMapToRoutePoints(this.routePoints);
+            }
         })
         .catch(error => {
             console.error('Ошибка при загрузке маршрута:', error);
+            
+            // Показываем сообщение об ошибке
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <strong>Ошибка!</strong> Не удалось загрузить маршрут. Пожалуйста, попробуйте позже.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            document.querySelector('.map-container').prepend(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
         });
 };
 
