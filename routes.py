@@ -2,6 +2,9 @@ import json
 from flask import render_template, jsonify, request
 from app import app, db
 from models import Attraction
+import hashlib
+import hmac
+import os
 
 @app.route('/')
 def index():
@@ -89,12 +92,12 @@ def initialize_db():
             ),
             Attraction(
                 name="Площадь Революции",
-                description="Центральная площадь Челябинска с памятником В.И. Ленину.",
+                description="Площадь Революции – главная историческая площадь Челябинска, сердце города и место проведения важнейших общественных мероприятий. Площадь была оформлена в середине XIX века и носила название Соборной площади до 1917 года. В центре площади установлен памятник В.И. Ленину, созданный скульптором В.И. Друзиным и архитектором Е.В. Александровым и торжественно открытый в 1959 году. Вокруг площади расположены знаковые здания города: Законодательное собрание Челябинской области, Городская дума, драматический театр и концертный зал имени С.С. Прокофьева. Площадь является отправной точкой для многих экскурсионных маршрутов и одной из главных достопримечательностей Челябинска.",
                 lat=55.160300,
                 lng=61.403119,
                 address="Площадь Революции",
                 category="Площадь",
-                image_url="https://via.placeholder.com/150"
+                image_url="https://photocentra.ru/i/2018/06/21/3_photocentra_ru_19352037.jpg"
             ),
             Attraction(
                 name="Сквер им. А.С. Пушкина",
@@ -344,6 +347,61 @@ def get_predefined_route(route_id):
     }
     
     return jsonify(result)
+
+def verify_telegram_hash(init_data):
+    """Verify Telegram Web App init data"""
+    try:
+        # Получаем BOT_TOKEN из переменных окружения
+        bot_token = os.environ.get('BOT_TOKEN')
+        if not bot_token:
+            return False
+
+        # Разбираем init_data
+        init_data_dict = dict(param.split('=') for param in init_data.split('&'))
+        hash_value = init_data_dict.pop('hash', '')
+        
+        # Сортируем параметры
+        data_check_string = '\n'.join(
+            f"{k}={v}" for k, v in sorted(init_data_dict.items())
+        )
+        
+        # Создаем secret_key
+        secret_key = hmac.new(
+            b"WebAppData",
+            bot_token.encode(),
+            hashlib.sha256
+        ).digest()
+        
+        # Вычисляем хеш
+        data_check_hash = hmac.new(
+            secret_key,
+            data_check_string.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        return data_check_hash == hash_value
+    except Exception:
+        return False
+
+@app.route('/telegram')
+def telegram_app():
+    """Маршрут для Telegram Mini App"""
+    # Проверяем init_data от Telegram
+    init_data = request.args.get('initData', '')
+    if not init_data or not verify_telegram_hash(init_data):
+        return 'Unauthorized', 401
+    
+    return render_template('telegram.html')
+
+@app.route('/api/telegram/share', methods=['POST'])
+def telegram_share():
+    """API для обработки действий шаринга в Telegram"""
+    data = request.json
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    # Здесь можно добавить логику обработки шаринга
+    return jsonify({'success': True})
 
 # Вызываем инициализацию базы данных при старте приложения
 with app.app_context():

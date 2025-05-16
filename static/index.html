@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЧелГис - Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        <div class="attractions-list" id="attractions-list"></div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Mini App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // Настройка темы
+        document.body.classList.add(tg.colorScheme);
+        
+        // Данные достопримечательностей (статические)
+        const attractions = [
+            {
+                name: "Государственный исторический музей Южного Урала",
+                description: "Государственный исторический музей Южного Урала – современный комплекс...",
+                lat: 55.159388,
+                lng: 61.402429,
+                address: "ул. Труда, 100",
+                category: "Музей"
+            },
+            // Добавьте остальные достопримечательности здесь
+        ];
+
+        // Основной код приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            // Отображение списка
+            const attractionsList = document.getElementById('attractions-list');
+            attractions.forEach(attraction => {
+                const card = document.createElement('div');
+                card.className = 'attraction-card';
+                card.innerHTML = `
+                    <h3>${attraction.name}</h3>
+                    <p>${attraction.description.substring(0, 100)}...</p>
+                    <button onclick="showLocation(${attraction.lat}, ${attraction.lng})">
+                        Показать на карте
+                    </button>
+                `;
+                attractionsList.appendChild(card);
+            });
+
+            // Интеграция с Telegram Mini Apps
+            tg.MainButton.setText('Поделиться местом');
+            tg.MainButton.show();
+            
+            tg.MainButton.onClick(() => {
+                const currentAttraction = attractions[0];
+                tg.sendData(JSON.stringify({
+                    type: 'share_location',
+                    location: {
+                        name: currentAttraction.name,
+                        lat: currentAttraction.lat,
+                        lng: currentAttraction.lng
+                    }
+                }));
+            });
+
+            // Инициализация карты
+            mapboxgl.accessToken = 'pk.eyJ1IjoieW91ci11c2VybmFtZSIsImEiOiJ5b3VyLXRva2VuIn0.your-public-token';
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [61.402429, 55.159388], // Центр Челябинска
+                zoom: 12
+            });
+
+            // Добавление маркеров
+            attractions.forEach(attraction => {
+                new mapboxgl.Marker()
+                    .setLngLat([attraction.lng, attraction.lat])
+                    .addTo(map);
+            });
+        });
+
+        function showLocation(lat, lng) {
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 15
+            });
+        }
+    </script>
+</body>
+</html> 
