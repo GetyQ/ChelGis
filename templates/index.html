@@ -3,6 +3,31 @@
 {% block title %}ЧелГис - Интерактивная карта Челябинска{% endblock %}
 
 {% block content %}
+<!-- Модальное окно с предлагаемыми маршрутами -->
+<div class="modal fade" id="predefined-routes-modal" tabindex="-1" aria-labelledby="predefined-routes-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="predefined-routes-modal-label">Готовые маршруты по Челябинску</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Выберите один из готовых маршрутов для изучения города:</p>
+                <div id="predefined-routes-list">
+                    <div class="text-center p-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p>Загрузка маршрутов...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <!-- Боковая панель с фильтрами и списком -->
     <div class="col-md-3 sidebar">
@@ -29,6 +54,14 @@
                 <option value="all">Все категории</option>
                 <!-- Категории будут добавлены динамически -->
             </select>
+        </div>
+        
+        <!-- Кнопка готовых маршрутов -->
+        <div class="predefined-routes sidebar-section">
+            <h4>Готовые маршруты</h4>
+            <button type="button" class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#predefined-routes-modal">
+                <i class="fas fa-route me-1"></i> Посмотреть готовые маршруты
+            </button>
         </div>
         
         <!-- Список достопримечательностей -->

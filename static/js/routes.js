@@ -193,6 +193,98 @@ const RouteManager = {
     }
 };
 
+// Загрузка предлагаемых маршрутов
+RouteManager.loadPredefinedRoutes = function() {
+    fetch('/api/predefined-routes')
+        .then(response => response.json())
+        .then(routes => {
+            this.displayPredefinedRoutes(routes);
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке предлагаемых маршрутов:', error);
+        });
+};
+
+// Отображение предлагаемых маршрутов
+RouteManager.displayPredefinedRoutes = function(routes) {
+    const container = document.getElementById('predefined-routes-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    routes.forEach((route, index) => {
+        const card = document.createElement('div');
+        card.className = 'card mb-2';
+        card.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${route.name}</h5>
+                <p class="card-text small">${route.description}</p>
+                <p class="card-text text-muted small">${route.points.length} точек</p>
+                <button class="btn btn-sm btn-outline-primary" 
+                        onclick="RouteManager.loadPredefinedRoute(${index})">
+                    <i class="fas fa-route"></i> Загрузить маршрут
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+};
+
+// Загрузка предопределенного маршрута
+RouteManager.loadPredefinedRoute = function(routeId) {
+    fetch(`/api/predefined-route/${routeId}`)
+        .then(response => response.json())
+        .then(routeData => {
+            // Очищаем текущий маршрут
+            this.clearRoute();
+            
+            // Добавляем точки из предопределенного маршрута
+            routeData.points.forEach(point => {
+                this.routePoints.push({
+                    id: point.id,
+                    name: point.name,
+                    lat: point.lat,
+                    lng: point.lng
+                });
+            });
+            
+            // Обновляем отображение маршрута
+            this.updateRouteDisplay();
+            
+            // Отображаем маршрут на карте
+            if (this.routePoints.length >= 2) {
+                this.buildRoute();
+            }
+            
+            // Показываем панель маршрута
+            document.getElementById('route-panel').style.display = 'block';
+            
+            // Закрываем модальное окно, если оно открыто
+            const modal = document.getElementById('predefined-routes-modal');
+            if (modal) {
+                bootstrap.Modal.getInstance(modal).hide();
+            }
+            
+            // Показываем сообщение об успешной загрузке
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                <strong>Маршрут загружен!</strong> "${routeData.name}" успешно добавлен.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            document.querySelector('.map-container').prepend(alert);
+            
+            // Автоматически удаляем сообщение через 5 секунд
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке маршрута:', error);
+        });
+};
+
 // Инициализация обработчиков событий
 document.addEventListener('DOMContentLoaded', function() {
     // Кнопка очистки маршрута
@@ -204,4 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('optimize-route-btn').addEventListener('click', function() {
         RouteManager.optimizeRoute();
     });
+    
+    // Загружаем предлагаемые маршруты
+    RouteManager.loadPredefinedRoutes();
 });
