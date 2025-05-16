@@ -1,0 +1,173 @@
+/* Пользовательские стили для приложения ЧелГис */
+
+/* Общие стили */
+body {
+    font-family: 'Roboto', 'Arial', sans-serif;
+}
+
+/* Стили для карты */
+#map {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    border-radius: 8px;
+    z-index: 1;
+}
+
+/* Контейнер с картой занимает всю высоту экрана на больших экранах */
+.map-container {
+    height: calc(100vh - 60px);
+    position: relative;
+}
+
+/* Сайдбар */
+.sidebar {
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Стили для элементов достопримечательностей */
+.attraction-item {
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.attraction-item:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Стили для всплывающих окон на карте */
+.attraction-popup h5 {
+    margin-bottom: 5px;
+}
+
+.attraction-popup p {
+    margin-bottom: 10px;
+}
+
+/* Панель для отображения маршрута */
+#route-panel {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Элементы маршрута */
+.route-point {
+    background-color: rgba(248, 249, 250, 0.8);
+    border-radius: 4px;
+}
+
+/* Панель с подробностями о достопримечательности */
+#attraction-details {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 350px;
+    max-width: 100%;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    max-height: calc(100% - 20px);
+    overflow-y: auto;
+}
+
+/* Контейнер для сообщений об ошибках */
+#error-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 1000;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 767.98px) {
+    .map-container {
+        height: calc(100vh - 60px - 200px);
+    }
+    
+    .sidebar {
+        max-height: 250px;
+        margin-bottom: 10px;
+    }
+    
+    #attraction-details {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: calc(100% - 60px);
+    }
+}
+
+/* Стили навигации */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Брендовые цвета */
+.brand-primary {
+    color: #4285F4;
+}
+
+.brand-secondary {
+    color: #34A853;
+}
+
+/* Стили для поиска */
+.search-container {
+    margin-bottom: 1rem;
+}
+
+#search-no-results {
+    display: none;
+    padding: 10px;
+    background-color: rgba(255, 193, 7, 0.1);
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* Сворачиваемая панель категорий для мобильных устройств */
+.category-collapse {
+    margin-bottom: 1rem;
+}
+
+/* Отступы в сайдбаре */
+.sidebar-section {
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-section h4 {
+    margin-bottom: 1rem;
+}
+
+/* Стили для кнопок в маршруте */
+.route-controls {
+    margin-top: 10px;
+}
+
+/* Спиннер загрузки */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 1001;
+}

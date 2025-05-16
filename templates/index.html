@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block title %}ЧелГис - Интерактивная карта Челябинска{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Боковая панель с фильтрами и списком -->
+    <div class="col-md-3 sidebar">
+        <!-- Панель поиска -->
+        <div class="search-container sidebar-section">
+            <h4>Поиск</h4>
+            <form id="search-form">
+                <div class="input-group">
+                    <input type="text" id="search-input" class="form-control" placeholder="Название достопримечательности...">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            <div id="search-no-results" class="mt-2 alert alert-warning">
+                Ничего не найдено. Попробуйте изменить запрос.
+            </div>
+        </div>
+        
+        <!-- Фильтр по категориям -->
+        <div class="category-filter sidebar-section">
+            <h4>Категории</h4>
+            <select id="category-filter" class="form-select">
+                <option value="all">Все категории</option>
+                <!-- Категории будут добавлены динамически -->
+            </select>
+        </div>
+        
+        <!-- Список достопримечательностей -->
+        <div class="attractions-list sidebar-section">
+            <h4>Достопримечательности</h4>
+            <div id="attractions-list">
+                <!-- Достопримечательности будут добавлены динамически -->
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p>Загрузка достопримечательностей...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Карта -->
+    <div class="col-md-9 map-container">
+        <!-- Контейнер для сообщений об ошибках -->
+        <div id="error-container" style="display: none;">
+            <div class="alert alert-danger" role="alert">
+                <span id="error-message">Произошла ошибка</span>
+            </div>
+        </div>
+        
+        <!-- Контейнер карты -->
+        <div id="map"></div>
+        
+        <!-- Панель с подробностями о достопримечательности -->
+        <div id="attraction-details" style="display: none;"></div>
+        
+        <!-- Панель маршрута -->
+        <div id="route-panel" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Маршрут (<span id="route-point-count">0</span> точек)</h5>
+                <div>
+                    <button id="optimize-route-btn" class="btn btn-sm btn-info" disabled>
+                        <i class="fas fa-sort"></i> Оптимизировать
+                    </button>
+                    <button id="clear-route-btn" class="btn btn-sm btn-danger" disabled>
+                        <i class="fas fa-trash-alt"></i> Очистить
+                    </button>
+                </div>
+            </div>
+            <div id="route-points-list">
+                <!-- Точки маршрута будут добавлены динамически -->
+            </div>
+            <div class="mt-2 text-muted">
+                Примерное расстояние: <span id="route-distance">0</span> км
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Скрипты для работы с картой и маршрутами -->
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/routes.js') }}"></script>
+{% endblock %}
