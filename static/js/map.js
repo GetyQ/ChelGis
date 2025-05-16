@@ -111,21 +111,42 @@ const ChelMap = {
         const listContainer = document.getElementById('attractions-list');
         listContainer.innerHTML = '';
         
+        // Категории и их цвета
+        const categoryColors = {
+            'Музей': 'info',
+            'Культура': 'primary',
+            'Парк': 'success',
+            'Архитектура': 'secondary',
+            'Памятник': 'warning',
+            'Развлечения': 'danger'
+        };
+        
         attractions.forEach(attraction => {
+            const categoryColor = categoryColors[attraction.category] || 'secondary';
             const item = document.createElement('div');
-            item.className = 'attraction-item mb-2 p-2 border-bottom';
+            item.className = 'attraction-item';
             item.innerHTML = `
-                <h5>${attraction.name}</h5>
-                <p class="text-muted small">${attraction.category}</p>
-                <div class="d-flex justify-content-between">
-                    <button class="btn btn-sm btn-outline-info" 
-                            onclick="showAttractionDetails(${attraction.id})">
-                        Подробнее
-                    </button>
-                    <button class="btn btn-sm btn-outline-primary"
-                            onclick="ChelMap.zoomToAttraction(${attraction.lat}, ${attraction.lng})">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </button>
+                <div class="d-flex align-items-center">
+                    ${attraction.image_url ? 
+                        `<img src="${attraction.image_url}" alt="${attraction.name}" class="me-3">` : 
+                        `<div class="bg-dark d-flex align-items-center justify-content-center me-3" style="width:60px;height:60px;border-radius:6px;">
+                            <i class="bi bi-geo-alt-fill fs-3 text-${categoryColor}"></i>
+                         </div>`
+                    }
+                    <div>
+                        <h5 class="mb-1">${attraction.name}</h5>
+                        <p class="text-muted small">${attraction.category || 'Место'}</p>
+                        <div class="d-flex justify-content-between mt-2">
+                            <button class="btn btn-sm btn-outline-info" 
+                                onclick="showAttractionDetails(${attraction.id})">
+                                <i class="bi bi-info-circle"></i> Подробнее
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary"
+                                onclick="ChelMap.map.setView([${attraction.lat}, ${attraction.lng}], 16)">
+                                <i class="bi bi-geo-alt"></i> На карте
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
             listContainer.appendChild(item);
