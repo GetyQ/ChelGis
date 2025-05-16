@@ -266,6 +266,15 @@ RouteManager.displayPredefinedRoutes = function(routes) {
 
 // Загрузка предопределенного маршрута
 RouteManager.loadPredefinedRoute = function(routeId) {
+    // Отладочная функция для просмотра объекта
+    const logObject = (obj, name = 'Object') => {
+        try {
+            console.log(`${name}:`, JSON.stringify(obj, null, 2));
+        } catch (e) {
+            console.log(`Cannot stringify ${name}:`, obj);
+        }
+    };
+    
     // Функция для добавления алерта
     const showAlert = (type, message, timeout = 5000) => {
         const alert = document.createElement('div');
@@ -287,6 +296,8 @@ RouteManager.loadPredefinedRoute = function(routeId) {
         return alert;
     };
 
+    console.log('Загрузка маршрута с ID:', routeId);
+    
     // Показываем индикатор загрузки
     const loadingAlert = showAlert('info', `
         <div class="d-flex align-items-center">
@@ -298,7 +309,7 @@ RouteManager.loadPredefinedRoute = function(routeId) {
     `, 0);
     
     // Закрываем модальное окно с предопределенными маршрутами
-    const closeRouteModal = () => {
+    try {
         const modal = document.getElementById('predefined-routes-modal');
         if (modal) {
             // Просто скрываем модальное окно
@@ -308,81 +319,116 @@ RouteManager.loadPredefinedRoute = function(routeId) {
             
             // Удаляем фон модального окна
             const backdrop = document.querySelector('.modal-backdrop');
-            if (backdrop) backdrop.parentNode.removeChild(backdrop);
+            if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
         }
-    };
+    } catch (e) {
+        console.warn('Ошибка при закрытии модального окна:', e);
+    }
     
-    // Закрываем модальное окно перед загрузкой маршрута
-    closeRouteModal();
-    
-    // Загружаем данные маршрута с задержкой (чтобы модальное окно успело закрыться)
+    // Загружаем данные маршрута с задержкой
     setTimeout(() => {
+        console.log(`Запрашиваем данные маршрута: /api/predefined-route/${routeId}`);
+        
         fetch(`/api/predefined-route/${routeId}`)
             .then(response => {
+                console.log('Получен ответ от сервера:', response.status, response.statusText);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
             .then(routeData => {
+                console.log('Получены данные маршрута:', routeData.name);
+                logObject(routeData, 'Данные маршрута');
+                
                 // Удаляем индикатор загрузки
-                loadingAlert.remove();
+                if (loadingAlert) loadingAlert.remove();
                 
-                // Очищаем текущий маршрут
-                this.clearRoute();
-                
-                // Сохраняем название маршрута
-                this.currentRouteName = routeData.name;
-                
-                // Проверяем наличие точек в маршруте
-                if (!routeData.points || routeData.points.length === 0) {
-                    throw new Error('Маршрут не содержит точек');
-                }
-                
-                // Добавляем точки из предопределенного маршрута
-                routeData.points.forEach(point => {
-                    this.routePoints.push({
-                        id: point.id,
-                        name: point.name,
-                        lat: point.lat,
-                        lng: point.lng,
-                        category: point.category 
+                try {
+                    // Очищаем текущий маршрут
+                    this.clearRoute();
+                    
+                    // Сохраняем название маршрута
+                    this.currentRouteName = routeData.name || 'Маршрут';
+                    
+                    // Проверяем наличие точек в маршруте
+                    if (!routeData.points || !Array.isArray(routeData.points) || routeData.points.length === 0) {
+                        throw new Error('Маршрут не содержит точек');
+                    }
+                    
+                    console.log(`Получено точек: ${routeData.points.length}`);
+                    
+                    // Добавляем точки из предопределенного маршрута
+                    routeData.points.forEach((point, index) => {
+                        console.log(`Добавление точки ${index + 1}:`, point.name);
+                        
+                        // Проверяем, что точка имеет необходимые поля
+                        if (!point.id || !point.name || !point.lat || !point.lng) {
+                            console.warn('Пропуск точки с недостающими данными:', point);
+                            return;
+                        }
+                        
+                        this.routePoints.push({
+                            id: point.id,
+                            name: point.name,
+                            lat: point.lat,
+                            lng: point.lng,
+                            category: point.category || 'Место'
+                        });
                     });
-                });
-                
-                // Обновляем отображение маршрута
-                this.updateRouteDisplay();
-                
-                // Отображаем маршрут на карте
-                if (this.routePoints.length >= 2) {
-                    this.buildRoute();
-                }
-                
-                // Показываем панель маршрута
-                document.getElementById('route-panel').style.display = 'block';
-                
-                // Показываем сообщение об успешной загрузке
-                showAlert('success', `
-                    <strong>Маршрут загружен!</strong> "${routeData.name}" добавлен на карту.
-                `);
-                
-                // Анимируем карту для показа всего маршрута
-                if (this.routePoints.length > 0) {
-                    ChelMap.fitMapToRoutePoints(this.routePoints);
+                    
+                    // Проверяем, что точки были успешно добавлены
+                    if (this.routePoints.length === 0) {
+                        throw new Error('Не удалось добавить точки в маршрут');
+                    }
+                    
+                    console.log('Обновляем отображение маршрута');
+                    
+                    // Обновляем отображение маршрута
+                    this.updateRouteDisplay();
+                    
+                    // Отображаем маршрут на карте
+                    if (this.routePoints.length >= 2) {
+                        console.log('Строим маршрут между точками');
+                        this.buildRoute();
+                    }
+                    
+                    // Показываем панель маршрута
+                    document.getElementById('route-panel').style.display = 'block';
+                    
+                    // Показываем сообщение об успешной загрузке
+                    showAlert('success', `
+                        <strong>Маршрут загружен!</strong> "${this.currentRouteName}" добавлен на карту.
+                    `);
+                    
+                    // Анимируем карту для показа всего маршрута
+                    if (this.routePoints.length > 0) {
+                        console.log('Подстраиваем карту под маршрут');
+                        ChelMap.fitMapToRoutePoints(this.routePoints);
+                    }
+                    
+                    console.log('Маршрут успешно загружен');
+                    
+                } catch (processingError) {
+                    console.error('Ошибка при обработке данных маршрута:', processingError);
+                    showAlert('warning', `
+                        <strong>Внимание!</strong> Возникла проблема при обработке маршрута: ${processingError.message}
+                    `);
                 }
             })
             .catch(error => {
                 // Удаляем индикатор загрузки
-                loadingAlert.remove();
+                if (loadingAlert) loadingAlert.remove();
                 
                 console.error('Ошибка при загрузке маршрута:', error);
                 
                 // Показываем сообщение об ошибке
                 showAlert('danger', `
-                    <strong>Ошибка!</strong> Не удалось загрузить маршрут. Пожалуйста, попробуйте позже.
+                    <strong>Ошибка!</strong> Не удалось загрузить маршрут. 
+                    <span class="small d-block mt-1">Подробности: ${error.message || 'неизвестная ошибка'}</span>
                 `);
             });
-    }, 300); // Даем небольшую задержку для стабильной работы
+    }, 300);
 };
 
 // Инициализация обработчиков событий
