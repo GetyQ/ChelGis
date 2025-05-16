@@ -1,28 +1,42 @@
 name: Build
-on: [push, pull_request]
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-android:
     name: Build Android APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    
+    permissions:
+      contents: read
+      packages: write
+      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
           cache: 'pip'
+          
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v3
+        with:
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer
-          pip install cython==0.29.33
-
-      - name: Install system dependencies
-        run: |
+          pip install --user --upgrade buildozer Cython==0.29.33 virtualenv
           sudo apt-get update
           sudo apt-get install -y \
             python3-pip \
@@ -46,10 +60,14 @@ jobs:
 
       - name: Build APK
         run: |
+          mkdir -p ~/.buildozer
+          cp -r .buildozer_global ~/.buildozer
           buildozer android debug
-        
+          cp -r ~/.buildozer .buildozer_global
+
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: chelgis-debug
-          path: bin/*.apk 
+          path: bin/*.apk
+          if-no-files-found: error 
